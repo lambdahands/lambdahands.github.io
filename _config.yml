@@ -1,0 +1,12 @@
+name: Process & Realization
+description: Explorations in the field between transforming and visualizing data
+meta_description: "One person's journey between visual communication and computer science."
+
+markdown: redcarpet
+pygments: true
+logo: false
+paginate: 15
+
+# Details for the RSS feed generator
+url:            'http://lambdahands.github.io'
+author:         'Philip Joseph'

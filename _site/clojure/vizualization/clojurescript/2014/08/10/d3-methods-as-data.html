@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>   
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <title>Process & Realization - Explorations in the field between transforming and visualizing data</title>
+    <meta name="description" content="One person's journey between visual communication and computer science." />
+
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="MobileOptimized" content="320" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/screen.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic|Open+Sans:700,400" />
+    <!-- This is for syntax highlight -->
+    <link rel="stylesheet" type="text/css" href="/assets/css/syntax.css">
+    <!-- Customisation  -->
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+
+</head>
+<body class="home-template">
+
+    
+    <main class="content" role="main">
+
+    <article class="post">
+        <header class="post-header">
+            <a id="blog-logo" href="http://lambdahands.github.io">
+                
+                    <span class="blog-title">Process & Realization</span>
+                 
+            </a>
+        </header>
+        
+        <span class="post-meta">
+        	<time datetime="2014-08-10">10 Aug 2014</time>
+        	
+        		on
+	        	
+	        	    clojure
+	        	
+	        	    vizualization
+	        	
+	        	    clojurescript
+	        	
+	        
+       	</span>
+
+        <h1 class="post-title">d3 Methods as Data in ClojureScript</h1>
+
+        <section class="post-content">
+            <p>In the debut of my blog, I&#39;d like to highlight the methods I&#39;ve been learning through studying functional program design patterns. This post specifically shows the influence of Clojure&#39;s &quot;it&#39;s all data&quot; methodology while also giving some insight into the power of the language in the browser.</p>
+
+<p>I&#39;ve had the pleasure of working with the visualization library <a href="https://d3js.org">d3.js</a> this month and the last for work and personal projects alike. While some libraries exist to use d3 in ClojureScript, such as <a href="https://github.com/lynaghk/c2">c2</a> and <a href="https://github.com/dribnet/strokes">strokes</a>, I thought it would be interesting to try my own implementation.</p>
+
+<h4>Starting out</h4>
+
+<p>d3 uses method chaining to output its results. For example, we can select an element and input a dataset while specifying which child elements to use and their properties.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// Trivial input of an array.</span>
+<span class="kd">var</span> <span class="nx">renderer</span> <span class="o">=</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s2">&quot;#content&quot;</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">selectAll</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">).</span><span class="nx">data</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+  <span class="p">.</span><span class="nx">enter</span><span class="p">()</span>
+  <span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">d</span><span class="p">;</span> <span class="p">});</span></code></pre></div>
+
+<p>Here&#39;s an example of using ClojureScript to do the above:</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">.attr</span> <span class="p">(</span><span class="nf">.append</span> <span class="p">(</span><span class="nf">.enter</span> <span class="p">(</span><span class="nf">.data</span> <span class="p">(</span><span class="nf">.selectAll</span> <span class="p">(</span><span class="nf">.select</span> <span class="nv">js/d3</span> <span class="s">&quot;#content&quot;</span><span class="p">)</span> <span class="s">&quot;div&quot;</span><span class="p">)</span> <span class="p">(</span><span class="nf">clj-&gt;js</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">])))</span> <span class="s">&quot;p&quot;</span><span class="p">)</span> <span class="s">&quot;text&quot;</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">d</span><span class="p">]</span> <span class="nv">d</span><span class="p">))</span></code></pre></div>
+
+<p>Of course, there&#39;s an easier way:</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nb">-&gt; </span><span class="nv">js/d3</span>
+  <span class="p">(</span><span class="nf">.select</span> <span class="s">&quot;#content&quot;</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">.selectAll</span> <span class="s">&quot;div&quot;</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">.data</span> <span class="p">(</span><span class="nf">clj-&gt;js</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">])</span>
+  <span class="nv">.enter</span>
+  <span class="p">(</span><span class="nf">.append</span> <span class="s">&quot;p&quot;</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">.attr</span> <span class="s">&quot;text&quot;</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">d</span><span class="p">]</span> <span class="nv">d</span><span class="p">))))</span></code></pre></div>
+
+<p>While this method works, it doesn&#39;t do much to take advantage of Clojure&#39;s powerful tools to transform data. One of the perks of chaining methods is the ability to apply them all at once with a single return value - the drawback being, however, the inability to revisit the operation as a whole, make comparisons, or even add or remove operations at will.</p>
+
+<p>As an exercise, I wrote a small wrapper around the interopability to input a persistent data structure and ouput a chaining object. The first step was defining some biolerplate functions. The <code>chain</code> inputs a JavaScript object and sets up field access by keywords.</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="kd">defn </span><span class="nv">chain</span> <span class="p">[</span><span class="nv">e</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">fn</span>
+   <span class="p">([</span><span class="nv">k</span><span class="p">]</span> <span class="p">(</span><span class="nb">aget </span><span class="nv">e</span> <span class="p">(</span><span class="nb">name </span><span class="nv">k</span><span class="p">)))</span>
+   <span class="p">([</span><span class="nv">k</span> <span class="nv">d</span><span class="p">]</span>
+    <span class="p">(</span><span class="nf">.bind</span> <span class="p">(</span><span class="nb">aget </span><span class="nv">d</span> <span class="p">(</span><span class="nb">name </span><span class="nv">k</span><span class="p">))</span> <span class="nv">d</span><span class="p">))))</span></code></pre></div>
+
+<p>So a lot like how we can do this in JavaScript,</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">d3</span><span class="p">[</span><span class="s2">&quot;select&quot;</span><span class="p">](</span><span class="s2">&quot;#content&quot;</span><span class="p">)</span></code></pre></div>
+
+<p>we can now use keywords to do so in ClojureScript:</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="k">def </span><span class="nv">d3-chain</span> <span class="p">(</span><span class="nf">chain</span> <span class="nv">js/d3</span><span class="p">))</span>
+
+<span class="p">((</span><span class="nf">d3-chain</span> <span class="ss">:select</span><span class="p">)</span> <span class="s">&quot;#content&quot;</span><span class="p">)</span></code></pre></div>
+
+<p>This does have a bit of a kink to it:</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">((</span><span class="nf">d3-chain</span> <span class="ss">:selectAll</span> <span class="p">((</span><span class="nf">d3-chain</span> <span class="ss">:select</span><span class="p">)</span> <span class="s">&quot;#content&quot;</span><span class="p">))</span> <span class="s">&quot;div&quot;</span><span class="p">)</span></code></pre></div>
+
+<p>While a programmer wouldn&#39;t be fond of writing this, it does have a subtle property, namely that at any point in time we can pass in different object with the same function protocols as d3.js.</p>
+
+<h4>Extending</h4>
+
+<p>An invaluable lesson I&#39;ve learned while using Clojure is the effectiveness of extensibility. In order to abstract our chaining, there&#39;s a wonderful set of tools that give us the ability to do so elegantly.</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="kd">defprotocol </span><span class="nv">IRealize</span>
+  <span class="p">(</span><span class="nf">realize</span> <span class="p">[</span><span class="nv">this</span><span class="p">]))</span>
+
+<span class="p">(</span><span class="kd">deftype </span><span class="nv">Grapher</span> <span class="p">[</span><span class="nv">obj</span> <span class="nv">res</span><span class="p">]</span>
+  <span class="nv">IRealize</span>
+  <span class="p">(</span><span class="nf">realize</span> <span class="p">[</span><span class="nv">this</span><span class="p">]</span> <span class="nv">res</span><span class="p">))</span></code></pre></div>
+
+<p>By creating a new type, we can be specific about how we implement our abstraction. The <code>res</code> variable will simply be the <em>result</em> of our method chain.</p>
+
+<p>We can further extend our type, even into the language&#39;s own protocols. I like the way keys in Clojure are functions themselves when called. We&#39;ll use this protocol, called <code>ILookup</code> to extend the Grapher type.</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="kd">defprotocol </span><span class="nv">IRealize</span>
+  <span class="p">(</span><span class="nf">realize</span> <span class="p">[</span><span class="nv">this</span><span class="p">]))</span>
+
+<span class="p">(</span><span class="kd">deftype </span><span class="nv">Grapher</span> <span class="p">[</span><span class="nv">obj</span> <span class="nv">res</span><span class="p">]</span>
+  <span class="nv">IRealize</span>
+  <span class="p">(</span><span class="nf">realize</span> <span class="p">[</span><span class="nv">this</span><span class="p">]</span> <span class="nv">res</span><span class="p">)</span>
+  <span class="nv">ILookup</span>
+  <span class="p">(</span><span class="nf">-lookup</span> <span class="p">[</span><span class="nv">this</span> <span class="nv">n</span><span class="p">]</span>
+    <span class="p">(</span><span class="nf">-lookup</span> <span class="nv">this</span> <span class="nv">n</span> <span class="nv">nil</span><span class="p">))</span>
+  <span class="p">(</span><span class="nf">-lookup</span> <span class="p">[</span><span class="nv">this</span> <span class="nv">n</span> <span class="nv">not-found</span><span class="p">]</span>
+    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">nil? </span><span class="nv">res</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">o</span> <span class="p">(</span><span class="nf">chain</span> <span class="nv">obj</span><span class="p">)]</span>
+        <span class="p">(</span><span class="nf">Grapher.</span> <span class="nv">o</span> <span class="p">(</span><span class="nf">o</span> <span class="nv">n</span><span class="p">)))</span>
+      <span class="p">(</span><span class="nf">Grapher.</span> <span class="nv">obj</span> <span class="p">(</span><span class="nf">obj</span> <span class="nv">n</span> <span class="nv">res</span><span class="p">)))))</span></code></pre></div>
+
+<p>We&#39;re now able to access our d3 functions as keywords.</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="ss">:select</span> <span class="p">(</span><span class="nf">Grapher.</span> <span class="nv">js/d3</span> <span class="nv">nil</span><span class="p">))</span>
+<span class="c1">;; =&gt; &lt;#[object Object]&gt;</span>
+<span class="p">(</span><span class="nf">realize</span> <span class="p">(</span><span class="ss">:select</span> <span class="p">(</span><span class="nf">Grapher.</span> <span class="nv">js/d3</span> <span class="nv">nil</span><span class="p">)))</span>
+<span class="c1">;; =&gt; &lt;#function ...&gt;</span></code></pre></div>
+
+<p>As you can see, the return object is another Grapher, and we can realize its results. It would be more convenient to call these functions directly after finding them.</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="kd">defprotocol </span><span class="nv">IRealize</span>
+  <span class="p">(</span><span class="nf">realize</span> <span class="p">[</span><span class="nv">this</span><span class="p">]))</span>
+
+<span class="p">(</span><span class="kd">deftype </span><span class="nv">Grapher</span> <span class="p">[</span><span class="nv">obj</span> <span class="nv">res</span><span class="p">]</span>
+  <span class="nv">IRealize</span>
+  <span class="p">(</span><span class="nf">realize</span> <span class="p">[</span><span class="nv">this</span><span class="p">]</span> <span class="nv">res</span><span class="p">)</span>
+  <span class="nv">IFn</span>
+  <span class="p">(</span><span class="nf">invoke</span> <span class="p">[</span><span class="nv">this</span><span class="p">]</span> <span class="p">(</span><span class="nf">Grapher.</span> <span class="nv">obj</span> <span class="p">(</span><span class="nf">res</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nf">invoke</span> <span class="p">[</span><span class="nv">this</span> <span class="nv">n</span><span class="p">]</span>
+    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">nil? </span><span class="nv">res</span><span class="p">)</span> <span class="nv">nil</span>
+      <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">m</span> <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">vector? </span><span class="nv">n</span><span class="p">)</span> <span class="p">(</span><span class="nb">apply </span><span class="nv">res</span> <span class="nv">n</span><span class="p">)</span> <span class="p">(</span><span class="nf">res</span> <span class="nv">n</span><span class="p">))]</span>
+        <span class="p">(</span><span class="nf">Grapher.</span> <span class="nv">obj</span> <span class="nv">m</span><span class="p">))))</span>
+  <span class="nv">ILookup</span>
+  <span class="p">(</span><span class="nf">-lookup</span> <span class="p">[</span><span class="nv">this</span> <span class="nv">n</span><span class="p">]</span>
+    <span class="p">(</span><span class="nf">-lookup</span> <span class="nv">this</span> <span class="nv">n</span> <span class="nv">nil</span><span class="p">))</span>
+  <span class="p">(</span><span class="nf">-lookup</span> <span class="p">[</span><span class="nv">this</span> <span class="nv">n</span> <span class="nv">not-found</span><span class="p">]</span>
+    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">nil? </span><span class="nv">res</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">o</span> <span class="p">(</span><span class="nf">chain</span> <span class="nv">obj</span><span class="p">)]</span>
+        <span class="p">(</span><span class="nf">Grapher.</span> <span class="nv">o</span> <span class="p">(</span><span class="nf">o</span> <span class="nv">n</span><span class="p">)))</span>
+      <span class="p">(</span><span class="nf">Grapher.</span> <span class="nv">obj</span> <span class="p">(</span><span class="nf">obj</span> <span class="nv">n</span> <span class="nv">res</span><span class="p">)))))</span></code></pre></div>
+
+<h4>Reducing</h4>
+
+<p>We&#39;re almost in business. We can now find and call our functions with relative ease, but we&#39;re stuck writing <code>conj</code>-like syntax.</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">((</span><span class="ss">:selectAll</span> <span class="p">((</span><span class="ss">:select</span> <span class="p">(</span><span class="nf">Grapher.</span> <span class="nv">js/d3</span><span class="p">))</span> <span class="s">&quot;#content&quot;</span><span class="p">))</span> <span class="s">&quot;div&quot;</span><span class="p">)</span></code></pre></div>
+
+<p>It still looks a lot like the verbose example above, but there&#39;s a key difference. Since we brought up <code>conj</code>, let&#39;s take create a function that inputs a vector and a grapher and outputs a Grapher.</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="kd">defn </span><span class="nv">plot</span> <span class="p">[</span><span class="nv">plotter</span> <span class="p">[</span><span class="nv">k</span> <span class="nv">vs</span><span class="p">]]</span>
+  <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">nil? </span><span class="nv">vs</span><span class="p">)</span>
+    <span class="p">((</span><span class="nf">k</span> <span class="nv">plotter</span><span class="p">))</span>
+    <span class="p">((</span><span class="nf">k</span> <span class="nv">plotter</span><span class="p">)</span> <span class="nv">vs</span><span class="p">)))</span></code></pre></div>
+
+<p>Now we can do something closer to this:</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="k">def </span><span class="nv">andre-d3000</span> <span class="p">(</span><span class="nf">Grapher.</span> <span class="nv">js/d3</span> <span class="nv">nil</span><span class="p">))</span>
+<span class="p">(</span><span class="nf">plot</span> <span class="nv">andre-d3000</span> <span class="p">[</span><span class="ss">:select</span> <span class="s">&quot;#content&quot;</span><span class="p">])</span>
+<span class="c1">;; =&gt; &lt;#[object Object]&gt;</span></code></pre></div>
+
+<p>We&#39;ve translated our instructions to Clojure vectors. Wait, if that&#39;s the case, why don&#39;t we take some hints from <code>conj</code>?</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nb">reduce conj </span><span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span> <span class="p">[</span><span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span><span class="p">])</span>
+<span class="c1">;; =&gt; [1 2 3 4 5 6]</span>
+
+<span class="p">(</span><span class="kd">defn </span><span class="nv">plot!</span> <span class="p">[</span><span class="nv">plotter</span> <span class="nv">props</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb">reduce </span><span class="nv">plot</span> <span class="nv">plotter</span> <span class="nv">props</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">props</span> <span class="p">[[</span><span class="ss">:select</span> <span class="s">&quot;#content&quot;</span><span class="p">]</span>
+             <span class="p">[</span><span class="ss">:selectAll</span> <span class="s">&quot;p&quot;</span><span class="p">]</span>
+             <span class="p">[</span><span class="ss">:data</span> <span class="p">(</span><span class="nf">clj-&gt;js</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">])]</span>
+             <span class="p">[</span><span class="ss">:enter</span><span class="p">]</span>
+             <span class="p">[</span><span class="ss">:append</span> <span class="s">&quot;p&quot;</span><span class="p">]</span>
+             <span class="p">[</span><span class="ss">:attr</span> <span class="p">[</span><span class="ss">:class</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">d</span><span class="p">]</span> <span class="nv">d</span><span class="p">)]]]]</span>
+  <span class="p">(</span><span class="nf">plot!</span> <span class="nv">andre-d3000</span> <span class="nv">props</span><span class="p">))</span>
+<span class="c1">;; =&gt; &lt;#[object Object]&gt;</span></code></pre></div>
+
+<p>Now we&#39;re talking. Our instruction set is merely a list of lists, a lot like the language it was written in. We&#39;re now free to make comparisons, add or remove methods, or even write higher functions that create the instruction set for us based on our goals.</p>
+
+<h4>Conclusion &amp; Implications</h4>
+
+<p>There are implications to the methods described above. One of the big disadvantages is the performance loss in <code>selects</code>. Even small benchmarks showed disappointing results:</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">simple-benchmark</span> <span class="p">[]</span>
+  <span class="p">(</span><span class="nb">-&gt; </span><span class="nv">js/d3</span> <span class="p">(</span><span class="nf">.select</span> <span class="s">&quot;#content&quot;</span><span class="p">)</span> <span class="p">(</span><span class="nf">.selectAll</span> <span class="s">&quot;p&quot;</span><span class="p">))</span> <span class="mi">100</span><span class="p">)</span>
+<span class="c1">;; =&gt; 100 runs, 15 msecs</span>
+<span class="p">(</span><span class="nf">simple-benchmark</span> <span class="p">[]</span>
+  <span class="p">(</span><span class="nf">plot!</span> <span class="nv">andre-d3000</span> <span class="p">[[</span><span class="ss">:select</span> <span class="s">&quot;#content&quot;</span><span class="p">]</span> <span class="p">[</span><span class="ss">:selectAll</span> <span class="s">&quot;p&quot;</span><span class="p">]])</span> <span class="mi">100</span><span class="p">)</span>
+<span class="c1">;; =&gt; 1000 runs, 54 msecs</span></code></pre></div>
+
+<p>This is a rare use case of d3, however. Selecting elements is trivial compared to an operation such as the one below:</p>
+
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="c1">;; Generate RGB noise</span>
+<span class="p">(</span><span class="kd">defn </span><span class="nv">rgb-str</span> <span class="p">[</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span><span class="p">]</span>
+  <span class="p">(</span><span class="k">let </span><span class="p">[[</span><span class="nv">r</span> <span class="nv">g</span> <span class="nv">b</span><span class="p">]</span> <span class="p">(</span><span class="nb">map </span><span class="o">#</span><span class="p">(</span><span class="nf">mod</span> <span class="nv">%</span> <span class="mi">256</span><span class="p">)</span> <span class="p">[</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span><span class="p">])]</span>
+    <span class="p">(</span><span class="nb">str </span><span class="s">&quot;rgb(&quot;</span><span class="nv">r</span><span class="s">&quot;,&quot;</span><span class="nv">g</span><span class="s">&quot;,&quot;</span><span class="nv">b</span><span class="s">&quot;)&quot;</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="kd">defn </span><span class="nv">props</span> <span class="p">[</span><span class="nv">c</span><span class="p">]</span>
+  <span class="p">[[</span><span class="ss">:select</span> <span class="s">&quot;#content&quot;</span><span class="p">]</span>
+   <span class="p">[</span><span class="ss">:selectAll</span><span class="p">]</span>
+   <span class="p">[</span><span class="ss">:data</span> <span class="p">[(</span><span class="nf">clj-&gt;js</span> <span class="p">(</span><span class="nb">take </span><span class="mi">50</span> <span class="p">(</span><span class="nf">repeatedly</span> <span class="o">#</span><span class="p">(</span><span class="nb">rand-int </span><span class="mi">255</span><span class="p">))))</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">d</span><span class="p">]</span> <span class="nv">d</span><span class="p">)]]</span>
+   <span class="p">[</span><span class="ss">:enter</span><span class="p">]</span>
+   <span class="p">[</span><span class="ss">:append</span> <span class="s">&quot;div&quot;</span><span class="p">]</span>
+   <span class="p">[</span><span class="ss">:attr</span> <span class="p">[</span><span class="s">&quot;class&quot;</span> <span class="s">&quot;bar&quot;</span><span class="p">]]</span>
+   <span class="p">[</span><span class="ss">:style</span> <span class="p">[</span><span class="s">&quot;background&quot;</span> <span class="nv">c</span><span class="p">]]])</span>
+
+<span class="p">(</span><span class="nf">simple-benchmark</span>
+  <span class="p">[]</span>
+  <span class="p">(</span><span class="nb">-&gt; </span><span class="nv">js/d3</span>
+    <span class="p">(</span><span class="nf">.select</span> <span class="s">&quot;#content&quot;</span><span class="p">)</span>
+    <span class="nv">.selectAll</span>
+    <span class="p">(</span><span class="nf">.data</span> <span class="p">(</span><span class="nf">clj-&gt;js</span> <span class="p">(</span><span class="nb">take </span><span class="mi">50</span> <span class="p">(</span><span class="nf">repeatedly</span> <span class="o">#</span><span class="p">(</span><span class="nb">rand-int </span><span class="mi">255</span><span class="p">))))</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">d</span><span class="p">]</span> <span class="nv">d</span><span class="p">))</span>
+    <span class="nv">.enter</span>
+    <span class="p">(</span><span class="nf">.append</span> <span class="s">&quot;div&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">.attr</span> <span class="s">&quot;class&quot;</span> <span class="s">&quot;bar&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">.style</span> <span class="s">&quot;background&quot;</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">d</span><span class="p">]</span> <span class="p">(</span><span class="nf">rgb-str</span> <span class="nv">d</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">))))</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="c1">;; =&gt; 1000 runs, 2381 msecs </span>
+
+<span class="p">(</span><span class="nf">simple-benchmark</span> <span class="p">[]</span> <span class="p">(</span><span class="nf">plot!</span> <span class="nv">andre-d3000</span> <span class="p">(</span><span class="nf">props</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">d</span><span class="p">]</span> <span class="p">(</span><span class="nf">rgb-str</span> <span class="nv">d</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">))))</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="c1">;; =&gt; 1000 runs, 2447 msecs</span></code></pre></div>
+
+<p>Not bad. The ClojureScript implementation is a tad behind, but it seems to keep up with large data sets. After you <code>:enter</code> into an element-- which in short &quot;binds&quot; data to nodes-- the performance normalizes.</p>
+
+<p>Creating the methods above was a great way to wrap my head around chains. While I&#39;m certain there are more efficient ways to achieve these results, I was impressed by how easy it was to implement Clojure&#39;s core protocols to extend my own types right in the browser.</p>
+
+<p>You can check out the <a href="https://github.com/lambdahands/plotter">code on Github</a>. I plan on extending this implementation further to reflect other work such as <a href="https://github.com/lynaghk/c2">c2</a>&#39;s ability to declaritvely create HTML blocks. Another post will certainly be in order.</p>
+
+        </section>
+
+        
+
+        <footer class="post-footer">
+        	<!-- If we want to display author's name and bio -->
+            
+                <section class="author">
+                	<header> <a href="http://lambdahands.github.io"> <img class="profile" src="/assets/images/profile.png" alt="Author's profile picture"></a></header>
+                	<article>
+                		<!-- Author Name -->
+                    	<h4> Philip Joseph </h4>
+                    	<!-- Author Bio -->
+                        <p>I'm on <a href="http://github.com/lambdahands">Github!</a>
+                        I'm on <a href="http://twitter.com/lambdahands">Twitter!</a></p>
+                    </article>
+                </section>                
+            
+
+            <section class="share">
+                <h4>Share this post</h4>
+                <a class="icon-twitter" href="http://twitter.com/share?text=d3 Methods as Data in ClojureScript&amp;url=http://lambdahands.github.io/clojure/vizualization/clojurescript/2014/08/10/d3-methods-as-data.html"
+                    onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <span class="hidden">Twitter</span>
+                </a>
+                <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://lambdahands.github.io/clojure/vizualization/clojurescript/2014/08/10/d3-methods-as-data.html"
+                    onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <span class="hidden">Facebook</span>
+                </a>
+                <a class="icon-google-plus" href="https://plus.google.com/share?url=http://lambdahands.github.io/clojure/vizualization/clojurescript/2014/08/10/d3-methods-as-data.html"
+                   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <span class="hidden">Google+</span>
+                </a>
+            </section>
+            
+            
+        	
+        </footer>
+
+    </article>
+
+</main>
+
+
+    <footer class="site-footer">
+        <a class="subscribe icon-feed" href="rss.xml"><span class="tooltip">Subscribe!</span></a>
+        <div class="inner">
+             <section class="copyright">All content copyright <a href="">Process & Realization</a> &copy;  &bull; All rights reserved.</section>
+             <section class="poweredby">Made with Jekyll using <a href="http://github.com/rosario/kasper">Kasper theme</a></section>
+        </div>
+    </footer>
+
+    
+    <script type="text/javascript" src="/assets/js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="/assets/js/jquery.fitvids.js"></script>
+    <script type="text/javascript" src="/assets/js/index.js"></script>
+
+    <!-- Google Analytics Tracking code -->
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-XXXXXXXX-X']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>   
+</body>
+</html>
