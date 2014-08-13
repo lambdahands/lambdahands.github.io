@@ -1,0 +1,6 @@
+{"version":3,
+ "file":"/Users/pdiaz/Play/plotter/resources/public/out/fig.js",
+ "sources":["fig.cljs"],
+ "lineCount":8,
+ "mappings":";AAAA;;;;AAGA,AAACA",
+ "names":["figwheel.client/watch-and-reload"]}

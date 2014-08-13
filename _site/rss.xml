@@ -17,14 +17,6 @@
       <pubDate>Sun, 10 Aug 2014 09:30:00 -0500</pubDate>
       <dc:date>2014-08-10T09:30:00-05:00</dc:date>
     </item>
-    <item>
-      <title>d3 Methods as Data in ClojureScript</title>
-      <link>http://lambdahands.github.io/clojure/vizualization/clojurescript/2014/08/10/d3-methods-as-data.html</link>
-      <description>&lt;p&gt;In the debut of my blog, I&amp;#39;d like to highlight the methods I&amp;#39;ve been learning through studying functional program design patterns. This post specifically shows the influence of Clojure&amp;#39;s &amp;quot;it&amp;#39;s all data&amp;quot; methodology while also giving some insight into the power of the language in the browser.&lt;/p&gt;
-</description>
-      <pubDate>Sun, 10 Aug 2014 09:30:00 -0500</pubDate>
-      <dc:date>2014-08-10T09:30:00-05:00</dc:date>
-    </item>
     <dc:date>2014-08-10T09:30:00-05:00</dc:date>
   </channel>
 </rss>
