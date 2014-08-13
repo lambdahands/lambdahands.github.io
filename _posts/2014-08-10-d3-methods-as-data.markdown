@@ -42,7 +42,7 @@ Of course, there's an easier way:
 
 While this method works, it doesn't do much to take advantage of Clojure's powerful tools to transform data. One of the perks of chaining methods is the ability to apply them all at once with a single return value - the drawback being, however, the inability to revisit the operation as a whole, make comparisons, or even add or remove operations at will.
 
-As an exercise, I wrote a small wrapper around the interopability to input a persistent data structure and ouput a chaining object. The first step was defining some biolerplate functions. The `chain` inputs a JavaScript object and sets up field access by keywords.
+As an exercise, I wrote a small wrapper around the interopability to input a persistent data structure and ouput a chaining object. The first step was defining some boilerplate functions. The `chain` inputs a JavaScript object and sets up field access by keywords.
 
 {% highlight clojure %}
 (defn chain [e]
